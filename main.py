@@ -10,13 +10,24 @@ from screens.inquirys import INQUIRYS
 from screens.un034 import UN034
 from screens.in001 import IN001
 from screens.un021 import UN021
+from screens.un045 import UN045
+from screens.un050 import UN050
+from screens.un051 import UN051
+from screens.un052 import UN052
+from screens.un053 import UN053
+from screens.un054 import UN054
 from screens.un489 import UN489
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
 def load_policy():
-    with open(os.path.join(HERE, "data", "policy.json"), "r", encoding="utf-8") as fh:
+    # EIGALPHA_POLICY_FILE lets an automation/test pick which dummy policy
+    # record to run against (e.g. data/policy_complaint.json for the
+    # complaint-handling scenario) without touching this file.
+    filename = os.environ.get("EIGALPHA_POLICY_FILE", "policy.json")
+    path = filename if os.path.isabs(filename) else os.path.join(HERE, "data", filename)
+    with open(path, "r", encoding="utf-8") as fh:
         return json.load(fh)
 
 
@@ -119,6 +130,18 @@ class ProClientApp:
             self.current_screen = IN001(self.terminal_container, self.navigate)
         elif target == "UN021":
             self.current_screen = UN021(self.terminal_container, self.navigate, self.policy)
+        elif target == "UN045":
+            self.current_screen = UN045(self.terminal_container, self.navigate, policy=self.policy, back_target="UN021")
+        elif target == "UN050":
+            self.current_screen = UN050(self.terminal_container, self.navigate, policy=self.policy, back_target="UN045")
+        elif target == "UN051":
+            self.current_screen = UN051(self.terminal_container, self.navigate, policy=self.policy, back_target="UN050")
+        elif target == "UN052":
+            self.current_screen = UN052(self.terminal_container, self.navigate, policy=self.policy, back_target="UN050")
+        elif target == "UN053":
+            self.current_screen = UN053(self.terminal_container, self.navigate, policy=self.policy, back_target="UN052")
+        elif target == "UN054":
+            self.current_screen = UN054(self.terminal_container, self.navigate, back_target="MASTERMENU")
         elif target == "UN489":
             self.current_screen = UN489(self.terminal_container, self.navigate, self.policy)
         else:

@@ -130,6 +130,70 @@ def main():
     assert screen_name(app) == "MASTERMENU"
     print("[ok] F12 chain back to MASTERMENU (INQUIRYS branch)")
 
+    def type_text(screen, text):
+        for c in text:
+            screen._on_key(SimpleNamespace(keysym=c, char=c))
+
+    # -- UN045 / UN050-UN054 (renewal-adjustments + risk-selection continuation) --
+    app.current_screen._on_key(digit("1")); app.current_screen._on_key(ev("Return")); root.update_idletasks()
+    app.current_screen._on_key(digit("3")); app.current_screen._on_key(ev("Return")); root.update_idletasks()
+    app.current_screen._on_key(ev("Return")); root.update_idletasks()
+    assert screen_name(app) == "UN021"
+
+    app.current_screen._on_key(ev("Return")); root.update_idletasks()
+    assert screen_name(app) == "UN045", screen_name(app)
+    print("[ok] UN021 Enter -> UN045")
+
+    app.current_screen.focused_field = "endorsements_flag"
+    app.current_screen.cursor_pos = 0
+    type_text(app.current_screen, "1")
+    app.current_screen._on_key(ev("Return")); root.update_idletasks()
+    assert screen_name(app) == "UN021", f"expected UN021 (Path B route), got {screen_name(app)}"
+    print("[ok] UN045 (endorsements route) Enter -> UN021 (Path B)")
+
+    app.current_screen._on_key(ev("Return")); root.update_idletasks()
+    app.current_screen.focused_field = "pra_flag"
+    app.current_screen.cursor_pos = 0
+    type_text(app.current_screen, "1")
+    app.current_screen._on_key(ev("Return")); root.update_idletasks()
+    assert screen_name(app) == "UN050", f"expected UN050 (Path A route), got {screen_name(app)}"
+    print("[ok] UN045 (pra_flag route) Enter -> UN050 (Path A)")
+
+    app.current_screen.focused_field = "household"
+    app.current_screen.cursor_pos = 0
+    type_text(app.current_screen, "1")
+    app.current_screen._on_key(ev("Return")); root.update_idletasks()
+    assert screen_name(app) == "UN051", screen_name(app)
+    app.current_screen._on_key(ev("F12")); root.update_idletasks()
+    assert screen_name(app) == "UN050", screen_name(app)
+    print("[ok] UN050 <-> UN051 (household option)")
+
+    app.current_screen._on_key(ev("F9")); root.update_idletasks()
+    assert screen_name(app) == "UN052", screen_name(app)
+    app.current_screen._on_key(ev("F3")); root.update_idletasks()
+    assert screen_name(app) == "UN053", screen_name(app)
+    print("[ok] UN050 F9 -> UN052 F3 -> UN053")
+
+    app.current_screen._on_key(ev("F7")); root.update_idletasks()
+    app.current_screen._on_key(ev("Return")); root.update_idletasks()
+    app.current_screen._on_key(ev("F5")); root.update_idletasks()
+    app.current_screen._on_key(ev("F2")); root.update_idletasks()
+    app.current_screen._on_key(ev("F9")); root.update_idletasks()
+    assert screen_name(app) == "UN054", screen_name(app)
+    print("[ok] UN053 post-flow -> UN054")
+
+    app.current_screen._on_key(digit("3")); app.current_screen._on_key(ev("Return")); root.update_idletasks()
+    assert app.current_screen.stage == "policy_entry"
+    type_text(app.current_screen, "02 HHR 0000001")
+    app.current_screen._on_key(ev("Return")); root.update_idletasks()
+    assert screen_name(app) == "UN021", screen_name(app)
+    print("[ok] UN054 policy entry -> UN021")
+
+    app.navigate("MASTERMENU")
+    root.update_idletasks()
+    assert screen_name(app) == "MASTERMENU", screen_name(app)
+    print("[ok] reset to MASTERMENU for exit test")
+
     app.current_screen._on_key(ev("F3"))
     root.update_idletasks()
     try:

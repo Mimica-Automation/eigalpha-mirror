@@ -1,5 +1,30 @@
-"""UN021 - POLICY HEADER screen."""
-from .base import TerminalScreen
+"""UN021 - POLICY HEADER screen.
+
+Extended (on top of the original read-only UN021) to cover two additional
+macro steps:
+
+  * "Update Policy Header" - F2 (relabelled from the previously-unimplemented
+    "F2=CMX" to "F2=Update") drops the screen into an inline edit mode with
+    two free-text fields: a one-line "Cmd" field and a "Text" (header
+    comment) field. Pressing F2 again while editing is the "Select Update"
+    action: it commits both values back onto the policy record and
+    re-renders the screen showing the committed text. F12 while editing
+    cancels the edit instead of navigating back (F12's normal
+    navigate-back-to-previous-screen behaviour is preserved outside of edit
+    mode).
+
+  * "Select Next Screen" - F8 pages to a second POLICY HEADER screen showing
+    renewal instalment / payment detail, in the same visual style as page 1.
+    F7 on page 2 pages back to page 1 ("Previous Screen").
+
+Also adds: pressing Enter on page 1 (outside of edit mode) navigates onward
+to UN045 (ENDORSEMENT PROCESSING), covering the "Review Endorsement" macro
+step that follows Policy Header in the recorded process.
+
+All previously-existing behaviour (F9=Referral Messages, F3=Exit,
+F12=Previous) is unchanged.
+"""
+from .base import TerminalScreen, spaced, COLS
 
 
 class UN021(TerminalScreen):
@@ -7,8 +32,24 @@ class UN021(TerminalScreen):
         super().__init__(master, on_key=self._on_key, **kw)
         self.navigate = navigate
         self.policy = policy
+
+        # -- paging --
+        self.page = 1
+
+        # -- inline update ("F2=Update" / "Select Update") state --
+        self.update_mode = False
+        self.update_fields = {
+            "cmd":     {"row": 16, "col": 27, "width": 10, "value": ""},
+            "comment": {"row": 17, "col": 27, "width": 45, "value": ""},
+        }
+        self.update_focus = "cmd"
+        self.update_cursor = 0
+
         self.render()
 
+    # ------------------------------------------------------------------
+    # rendering
+    # ------------------------------------------------------------------
     def render(self):
         self.clear()
         p = self.policy
@@ -26,6 +67,18 @@ class UN021(TerminalScreen):
         self.write(4, 16, "Agent  . :", tag="green")
         self.write(4, 27, f"{p['agent_no']} {p['agent_name']}", tag="white")
 
+        if self.page == 1:
+            self._render_page1()
+        else:
+            self._render_page2()
+
+        if self.update_mode:
+            self._render_update_overlay()
+
+        self._render_footer()
+
+    def _render_page1(self):
+        p = self.policy
         self.write(5, 0,  f"Application received? {p['application_received']}", tag="green")
 
         self.write(6, 0,  "Name of insured . :", tag="green")
@@ -59,6 +112,10 @@ class UN021(TerminalScreen):
         self.write(11, 47, "Trans source:", tag="green")
         self.write(11, 61, p["trans_source"], tag="white")
 
+        self.write(12, 0, "Comment . . . . . . . :", tag="green")
+        comment = p.get("header_comment", "")
+        self.write(12, 24, comment, tag="yellow" if comment else "white")
+
         self.write(13, 0, f"Ren {p['ren_code']}   {p['ren_desc']}", tag="green")
 
         self.write(14, 0, "Type of documents . :", tag="green")
@@ -70,6 +127,10 @@ class UN021(TerminalScreen):
         self.write(15, 26, p["payment_method_desc"], tag="green")
         self.write(15, 55, "No.instalments . :", tag="green")
         self.write(15, 74, p["no_instalments"], tag="white")
+
+        if not self.update_mode:
+            self.write(16, 0, "Last Cmd  . . . . . . :", tag="green")
+            self.write(16, 24, p.get("cmd_last", ""), tag="white")
 
         self.write(19, 55, "Inst Bill Option . :", tag="cyan")
         self.write(19, 76, p["inst_bill_option"], tag="white")
@@ -87,21 +148,147 @@ class UN021(TerminalScreen):
         self.write(21, 55, " Policy  ", tag="hl_cyanbox")
         self.write(21, 65, " B/Board ", tag="hl_green")
 
-        self.write(22, 0,  "F2=CMX", tag="cyan")
-        self.write(22, 10, "F3=Exit", tag="cyan")
+    def _render_page2(self):
+        p = self.policy
+        title = spaced("INSTALMENT / PAYMENT DETAIL")
+        self.write(6, (COLS - len(title)) // 2, title, tag="green")
+        self.write(6, 0, "Page 2", tag="cyan")
+
+        self.write(8,  0, "Instalment plan . . . . . . :", tag="green")
+        self.write(8,  30, p.get("instalment_plan", ""), tag="white")
+
+        self.write(9,  0, "Instalment amount . . . . . :", tag="green")
+        self.write(9,  30, p.get("instalment_amount", ""), tag="white")
+
+        self.write(10, 0, "Next instalment due . . . . :", tag="green")
+        self.write(10, 30, p.get("next_instalment_date", ""), tag="white")
+
+        self.write(11, 0, "Instalments paid to date . . :", tag="green")
+        self.write(11, 31, p.get("instalments_paid", ""), tag="white")
+
+        self.write(12, 0, "Direct debit reference . . . :", tag="green")
+        self.write(12, 31, p.get("dd_reference", ""), tag="white")
+
+        self.write(13, 0, "Collection day . . . . . . . :", tag="green")
+        self.write(13, 31, p.get("collection_day", ""), tag="white")
+
+    def _render_update_overlay(self):
+        # Clear rows 16-18 first (they may have "Last Cmd" content from page1)
+        self.write(16, 0, " " * COLS, tag="green")
+        self.write(17, 0, " " * COLS, tag="green")
+        self.write(18, 0, " " * COLS, tag="green")
+
+        self.write(16, 0, "Cmd  . . . . . . . . . :", tag="cyan")
+        self.write(17, 0, "Text . . . . . . . . . :", tag="cyan")
+        self.write(18, 0, "(Type text, TAB to switch field, F2=Select Update, F12=Cancel)", tag="yellow")
+
+        for key, f in self.update_fields.items():
+            val = f["value"].ljust(f["width"], "_")
+            self.write(f["row"], f["col"], val, tag="input")
+
+        f = self.update_fields[self.update_focus]
+        pos = min(self.update_cursor, f["width"] - 1)
+        self.paint(f["row"], f["col"] + pos, 1, "cursor")
+
+    def _render_footer(self):
+        if self.update_mode:
+            self.write(22, 2,  "F2=Select Update", tag="cyan")
+            self.write(22, 20, "F3=Exit",          tag="cyan")
+            self.write(23, 2,  "F12=Cancel",       tag="cyan")
+            return
+
+        if self.page == 2:
+            self.write(22, 2,  "F3=Exit",             tag="cyan")
+            self.write(22, 12, "F7=Previous Screen",  tag="cyan")
+            self.write(23, 2,  "F12=Previous",        tag="cyan")
+            return
+
+        self.write(22, 2,  "F2=Update",         tag="cyan")
+        self.write(22, 13, "F3=Exit",           tag="cyan")
         self.write(22, 22, "F5=Policy history", tag="cyan")
-        self.write(22, 42, "F6=Quotation", tag="cyan")
-        self.write(22, 58, "F7=Letter", tag="cyan")
+        self.write(22, 42, "F6=Quotation",      tag="cyan")
+        self.write(22, 56, "F7=Letter",         tag="cyan")
+        self.write(22, 67, "F8=Next Screen",    tag="cyan")
 
         self.write(23, 0,  "F9=Referral Messages", tag="cyan")
-        self.write(23, 22, "F10=Last claim", tag="cyan")
-        self.write(23, 42, "F11=Case", tag="cyan")
-        self.write(23, 58, "F12=Previous", tag="cyan")
+        self.write(23, 22, "F10=Last claim",       tag="cyan")
+        self.write(23, 42, "F11=Case",             tag="cyan")
+        self.write(23, 58, "F12=Previous",         tag="cyan")
 
+    # ------------------------------------------------------------------
+    # key handling
+    # ------------------------------------------------------------------
     def _on_key(self, event):
-        if event.keysym == "F9":
+        if self.update_mode:
+            self._handle_update_key(event)
+            return
+
+        keysym = event.keysym
+        if keysym == "F9":
             self.navigate("UN489")
-        elif event.keysym == "F3":
+        elif keysym == "F3":
             self.navigate("EXIT")
-        elif event.keysym == "F12":
+        elif keysym == "F12":
             self.navigate("BACK")
+        elif keysym == "F2" and self.page == 1:
+            self._enter_update_mode()
+        elif keysym == "F8" and self.page == 1:
+            self.page = 2
+            self.render()
+        elif keysym == "F7" and self.page == 2:
+            self.page = 1
+            self.render()
+        elif keysym == "Return" and self.page == 1:
+            self.navigate("UN045")
+
+    def _enter_update_mode(self):
+        self.update_mode = True
+        self.update_focus = "cmd"
+        self.update_cursor = len(self.update_fields["cmd"]["value"])
+        self.render()
+
+    def _handle_update_key(self, event):
+        keysym = event.keysym
+
+        if keysym == "F2":
+            # "Select Update": commit both fields back onto the policy record.
+            self.policy["cmd_last"] = self.update_fields["cmd"]["value"]
+            self.policy["header_comment"] = self.update_fields["comment"]["value"]
+            self.update_mode = False
+            self.render()
+            return
+        if keysym == "F3":
+            self.navigate("EXIT")
+            return
+        if keysym == "F12":
+            # Cancel the in-progress edit (discard, do not navigate away).
+            self.update_fields["cmd"]["value"] = ""
+            self.update_fields["comment"]["value"] = ""
+            self.update_mode = False
+            self.render()
+            return
+
+        f = self.update_fields[self.update_focus]
+        if keysym == "Tab":
+            keys = list(self.update_fields.keys())
+            i = keys.index(self.update_focus)
+            self.update_focus = keys[(i + 1) % len(keys)]
+            self.update_cursor = 0
+        elif keysym == "BackSpace":
+            if self.update_cursor > 0:
+                self.update_cursor -= 1
+                f["value"] = f["value"][:self.update_cursor] + f["value"][self.update_cursor + 1:]
+        elif keysym == "Left":
+            if self.update_cursor > 0:
+                self.update_cursor -= 1
+        elif keysym == "Right":
+            if self.update_cursor < f["width"] - 1:
+                self.update_cursor += 1
+        elif len(event.char) == 1 and event.char.isprintable():
+            if self.update_cursor < f["width"]:
+                val = (f["value"] + " " * f["width"])[:f["width"]]
+                val = val[:self.update_cursor] + event.char + val[self.update_cursor + 1:]
+                f["value"] = val.rstrip()
+                if self.update_cursor < f["width"] - 1:
+                    self.update_cursor += 1
+        self.render()

@@ -39,5 +39,13 @@
   "audit_messages": [
     {"loc": "000", "rsk": "000", "pcl": "", "sev": "2", "message": "Subject to Survey Clause H0054 exists"},
     {"loc": "000", "rsk": "000", "pcl": "", "sev": "2", "message": "Renewal method (02) requires manual review"}
-  ]
+  ],
+  "header_comment": "",
+  "cmd_last": "",
+  "instalment_plan": "MONTHLY",
+  "instalment_amount": "45.00",
+  "next_instalment_date": "01/09/26",
+  "instalments_paid": "0",
+  "dd_reference": "DD0000001",
+  "collection_day": "1st"
 }
