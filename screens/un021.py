@@ -35,6 +35,7 @@ class UN021(TerminalScreen):
 
         # -- paging --
         self.page = 1
+        self.instalments_posted = False
 
         # -- inline update ("F2=Update" / "Select Update") state --
         self.update_mode = False
@@ -172,6 +173,9 @@ class UN021(TerminalScreen):
         self.write(13, 0, "Collection day . . . . . . . :", tag="green")
         self.write(13, 31, p.get("collection_day", ""), tag="white")
 
+        if self.instalments_posted:
+            self.write(15, 0, "Instalments posted.", tag="yellow")
+
     def _render_update_overlay(self):
         # Clear rows 16-18 first (they may have "Last Cmd" content from page1)
         self.write(16, 0, " " * COLS, tag="green")
@@ -198,8 +202,9 @@ class UN021(TerminalScreen):
             return
 
         if self.page == 2:
-            self.write(22, 2,  "F3=Exit",             tag="cyan")
-            self.write(22, 12, "F7=Previous Screen",  tag="cyan")
+            self.write(22, 2,  "F2=Post Instalments", tag="cyan")
+            self.write(22, 24, "F3=Exit",             tag="cyan")
+            self.write(22, 34, "F7=Previous Screen",  tag="cyan")
             self.write(23, 2,  "F12=Previous",        tag="cyan")
             return
 
@@ -237,6 +242,9 @@ class UN021(TerminalScreen):
             self.render()
         elif keysym == "F7" and self.page == 2:
             self.page = 1
+            self.render()
+        elif keysym == "F2" and self.page == 2:
+            self.instalments_posted = True
             self.render()
         elif keysym == "Return" and self.page == 1:
             self.navigate("UN045")

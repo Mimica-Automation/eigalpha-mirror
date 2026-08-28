@@ -151,6 +151,16 @@ def main():
     assert screen_name(app) == "UN021", f"expected UN021 (Path B route), got {screen_name(app)}"
     print("[ok] UN045 (endorsements route) Enter -> UN021 (Path B)")
 
+    app.current_screen._on_key(ev("F8")); root.update_idletasks()
+    assert app.current_screen.page == 2
+    app.current_screen._on_key(ev("F2")); root.update_idletasks()
+    assert app.current_screen.instalments_posted is True
+    body = dump(app.current_screen)
+    assert "Instalments posted." in body
+    app.current_screen._on_key(ev("F7")); root.update_idletasks()
+    assert app.current_screen.page == 1
+    print("[ok] UN021 page2 F2 -> Post Instalments, F7 -> back to page 1")
+
     app.current_screen._on_key(ev("Return")); root.update_idletasks()
     app.current_screen.focused_field = "pra_flag"
     app.current_screen.cursor_pos = 0
