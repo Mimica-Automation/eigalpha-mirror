@@ -30,6 +30,6 @@ class UN489(TerminalScreen):
 
     def _on_key(self, event):
         if event.keysym == "F3":
-            self.navigate("EXIT")
+            self.navigate("BACK")  # was EXIT (destroyed root) - BACK is a safe no-op if the nav stack is empty
         elif event.keysym == "F12":
             self.navigate("BACK")

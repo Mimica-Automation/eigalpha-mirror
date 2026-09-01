@@ -90,7 +90,7 @@ class UN045(TerminalScreen):
                 self.navigate("UN021")
             return
         if keysym == "F3":
-            self.navigate("EXIT")
+            self.navigate("BACK")  # was EXIT (destroyed root) - BACK is a safe no-op if the nav stack is empty
             return
         if keysym == "F12":
             if self.back_target:

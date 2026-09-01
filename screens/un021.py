@@ -295,7 +295,7 @@ class UN021(TerminalScreen):
             self.render()
             return
         if keysym == "F3":
-            self.navigate("EXIT")
+            self.navigate("BACK")  # was EXIT (destroyed root) - BACK is a safe no-op if the nav stack is empty
             return
         if keysym == "F12":
             # Cancel the in-progress edit (discard, do not navigate away).
