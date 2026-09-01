@@ -1,7 +1,12 @@
 """UN021 - POLICY HEADER screen.
 
-Extended (on top of the original read-only UN021) to cover two additional
+Extended (on top of the original read-only UN021) to cover these additional
 macro steps:
+
+  * "Research and Submit Company's Location in System" - adds "Location
+    option" and "Additional insureds" as two more fields inside the same
+    F2 update overlay (appended after cmd/comment, not inserted between
+    them, so Path B's existing cmd/comment-only flow is unaffected).
 
   * "Update Policy Header" - F2 (relabelled from the previously-unimplemented
     "F2=CMX" to "F2=Update") drops the screen into an inline edit mode with
@@ -42,6 +47,14 @@ class UN021(TerminalScreen):
         self.update_fields = {
             "cmd":     {"row": 16, "col": 27, "width": 10, "value": ""},
             "comment": {"row": 17, "col": 27, "width": 45, "value": ""},
+            # Appended after cmd/comment (not inserted between them) so Path B's
+            # existing flow - which only ever types into "cmd" then presses F2,
+            # never Tabs - sees no behavior change. Covers the "Research and
+            # Submit Company's Location in System" macro's Location Option /
+            # Additional Insureds fields, reusing this same F2 overlay rather
+            # than a new key binding.
+            "location_option":   {"row": 19, "col": 27, "width": 2, "value": policy.get("location_option", "")},
+            "additional_insureds_edit": {"row": 20, "col": 27, "width": 1, "value": ""},
         }
         self.update_focus = "cmd"
         self.update_cursor = 0
@@ -177,13 +190,15 @@ class UN021(TerminalScreen):
             self.write(15, 0, "Instalments posted.", tag="yellow")
 
     def _render_update_overlay(self):
-        # Clear rows 16-18 first (they may have "Last Cmd" content from page1)
-        self.write(16, 0, " " * COLS, tag="green")
-        self.write(17, 0, " " * COLS, tag="green")
-        self.write(18, 0, " " * COLS, tag="green")
+        # Clear rows 16-20 first (they may have page1 content underneath -
+        # "Last Cmd", "Inst Bill Option", "Coinsurance" etc.)
+        for row in range(16, 21):
+            self.write(row, 0, " " * COLS, tag="green")
 
         self.write(16, 0, "Cmd  . . . . . . . . . :", tag="cyan")
         self.write(17, 0, "Text . . . . . . . . . :", tag="cyan")
+        self.write(19, 0, "Location option  . . . :", tag="cyan")
+        self.write(20, 0, "Additional insureds  . :", tag="cyan")
         self.write(18, 0, "(Type text, TAB to switch field, F2=Select Update, F12=Cancel)", tag="yellow")
 
         for key, f in self.update_fields.items():
@@ -232,7 +247,18 @@ class UN021(TerminalScreen):
         if keysym == "F9":
             self.navigate("UN489")
         elif keysym == "F3":
-            self.navigate("EXIT")
+            # "Select Exit" from POLICY HEADER returns to its immediate parent
+            # menu (EIGMTA-REN) within the same session - matches the
+            # recording: F3, then "Select Return to Menu" (Enter), then typing
+            # "3" (Policy Renewal Review, EIGMTA-REN's own route to UN034) and
+            # a policy number to land back on a fresh UN021. navigate("EXIT")
+            # destroys the entire Tk root window instead, silently killing the
+            # mirror mid-run whenever "Submitting the Policy Renewal Review"
+            # pressed F3 here - and MASTERMENU (the top-level menu) isn't
+            # right either: it has no route for "3", so the automation's next
+            # keypresses would dead-end and its final F12 would hit
+            # MASTERMENU's own back_target="EXIT", destroying root anyway.
+            self.navigate("EIGMTA-REN")
         elif keysym == "F12":
             self.navigate("BACK")
         elif keysym == "F2" and self.page == 1:
@@ -259,9 +285,12 @@ class UN021(TerminalScreen):
         keysym = event.keysym
 
         if keysym == "F2":
-            # "Select Update": commit both fields back onto the policy record.
+            # "Select Update": commit all fields back onto the policy record.
             self.policy["cmd_last"] = self.update_fields["cmd"]["value"]
             self.policy["header_comment"] = self.update_fields["comment"]["value"]
+            self.policy["location_option"] = self.update_fields["location_option"]["value"]
+            if self.update_fields["additional_insureds_edit"]["value"]:
+                self.policy["additional_insureds"] = self.update_fields["additional_insureds_edit"]["value"]
             self.update_mode = False
             self.render()
             return
@@ -272,6 +301,7 @@ class UN021(TerminalScreen):
             # Cancel the in-progress edit (discard, do not navigate away).
             self.update_fields["cmd"]["value"] = ""
             self.update_fields["comment"]["value"] = ""
+            self.update_fields["additional_insureds_edit"]["value"] = ""
             self.update_mode = False
             self.render()
             return

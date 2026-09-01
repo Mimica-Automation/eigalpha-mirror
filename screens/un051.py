@@ -72,7 +72,7 @@ class UN051(TerminalScreen):
         self.write(22, 2,  "F2=Update",  tag="cyan")
         self.write(22, 13, "F3=Exit",    tag="cyan")
         self.write(22, 23, "F4=Prompt",  tag="cyan")
-        self.write(22, 34, "F5=Auto Rate", tag="cyan")
+        self.write(22, 34, "F6=Auto Rate", tag="cyan")
         self.write(22, 47, "F12=Previous", tag="cyan")
         self.write(23, 0,  "POL-HHOLD", tag="green")
 
@@ -100,7 +100,7 @@ class UN051(TerminalScreen):
             self.hint = "Updated."
             self.render()
             return
-        if keysym == "F5":
+        if keysym == "F6":
             sum_insured = self.fields["full_value_sum_insured"]["value"] or "150,000"
             self.auto_rated_premium = "1,148.60"
             self.hint = f"Auto-rated on sum insured {sum_insured}."

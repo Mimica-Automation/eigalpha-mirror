@@ -37,11 +37,41 @@
   "blackboard": "Y",
   "diary": "N",
   "audit_messages": [
-    {"loc": "000", "rsk": "000", "pcl": "", "sev": "2", "message": "Reason 1: Subject to Survey Clause H0054 exists"},
-    {"loc": "000", "rsk": "000", "pcl": "", "sev": "2", "message": "Reason 2: Renewal method (02) requires manual review"},
-    {"loc": "000", "rsk": "000", "pcl": "", "sev": "1", "message": "GC 260826: client has raised a formal complaint"},
-    {"loc": "000", "rsk": "000", "pcl": "", "sev": "1", "message": "and legal proceedings are reported ongoing"},
-    {"loc": "000", "rsk": "000", "pcl": "", "sev": "1", "message": "Review complaint status before confirming renewal terms"}
+    {
+      "loc": "000",
+      "rsk": "000",
+      "pcl": "",
+      "sev": "2",
+      "message": "Reason 1: Subject to Survey Clause H0054 exists"
+    },
+    {
+      "loc": "000",
+      "rsk": "000",
+      "pcl": "",
+      "sev": "2",
+      "message": "Reason 2: Renewal method (02) requires manual review"
+    },
+    {
+      "loc": "000",
+      "rsk": "000",
+      "pcl": "",
+      "sev": "1",
+      "message": "GC 260826: client has raised a formal complaint"
+    },
+    {
+      "loc": "000",
+      "rsk": "000",
+      "pcl": "",
+      "sev": "1",
+      "message": "and legal proceedings are reported ongoing"
+    },
+    {
+      "loc": "000",
+      "rsk": "000",
+      "pcl": "",
+      "sev": "1",
+      "message": "Review complaint status before confirming renewal terms"
+    }
   ],
   "header_comment": "",
   "cmd_last": "",
@@ -50,5 +80,6 @@
   "next_instalment_date": "15/09/26",
   "instalments_paid": "0",
   "dd_reference": "DD0198766",
-  "collection_day": "15th"
+  "collection_day": "15th",
+  "location_option": ""
 }
