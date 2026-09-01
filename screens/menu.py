@@ -83,7 +83,7 @@ class MenuScreen(TerminalScreen):
                     return
             self._flash_invalid()
         elif keysym in ("F3",):
-            self.navigate("EXIT")
+            self.navigate("BACK")  # was EXIT (destroyed root) - BACK is a safe no-op if the nav stack is empty
         elif keysym in ("F12", "F1", "F4"):
             if keysym == "F12" and self.back_target:
                 self.navigate(self.back_target)

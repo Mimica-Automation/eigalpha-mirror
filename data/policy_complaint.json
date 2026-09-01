@@ -1,25 +1,25 @@
 {
-  "policy_number": "02 HHR 0000001",
+  "policy_number": "02 HHR 0198766",
   "policy_branch": "02",
   "policy_type": "HHR",
-  "policy_num": "0000001",
+  "policy_num": "0198766",
   "policy_desc": "Art & Private Client Insurance",
-  "client_no": "1234567",
-  "client_name": "Mr J Doe",
-  "agent_no": "CY 0000001",
-  "agent_name": "Sample Insurance Brokers Ltd",
+  "client_no": "1987660",
+  "client_name": "Mrs A Doe",
+  "agent_no": "CY 0000877",
+  "agent_name": "Sample Broker Services Ltd",
   "application_received": "Y",
-  "name_of_insured": "Mr J Doe",
+  "name_of_insured": "Mr J Doe & Mrs A Doe",
   "status": "Review Rqd",
   "pol_booklet": "M1023",
-  "status_date": " 7/04/26",
+  "status_date": "26/08/26",
   "additional_insureds": "Y",
   "broker_pend_flag": "",
-  "period_from": "29/05/25",
-  "period_to": "28/05/26",
+  "period_from": "15/09/25",
+  "period_to": "14/09/26",
   "period_at": "24 Hours",
   "renew_for": "12 Months",
-  "original_incept": "29/05/17",
+  "original_incept": "15/09/12",
   "replaces_policy": "",
   "uw_code": "IS",
   "uw_desc": "Intermediary Services U/W",
@@ -42,23 +42,44 @@
       "rsk": "000",
       "pcl": "",
       "sev": "2",
-      "message": "Subject to Survey Clause H0054 exists"
+      "message": "Reason 1: Subject to Survey Clause H0054 exists"
     },
     {
       "loc": "000",
       "rsk": "000",
       "pcl": "",
       "sev": "2",
-      "message": "Renewal method (02) requires manual review"
+      "message": "Reason 2: Renewal method (02) requires manual review"
+    },
+    {
+      "loc": "000",
+      "rsk": "000",
+      "pcl": "",
+      "sev": "1",
+      "message": "GC 260826: client has raised a formal complaint"
+    },
+    {
+      "loc": "000",
+      "rsk": "000",
+      "pcl": "",
+      "sev": "1",
+      "message": "and legal proceedings are reported ongoing"
+    },
+    {
+      "loc": "000",
+      "rsk": "000",
+      "pcl": "",
+      "sev": "1",
+      "message": "Review complaint status before confirming renewal terms"
     }
   ],
   "header_comment": "",
   "cmd_last": "",
   "instalment_plan": "MONTHLY",
-  "instalment_amount": "45.00",
-  "next_instalment_date": "01/09/26",
+  "instalment_amount": "62.50",
+  "next_instalment_date": "15/09/26",
   "instalments_paid": "0",
-  "dd_reference": "DD0000001",
-  "collection_day": "1st",
+  "dd_reference": "DD0198766",
+  "collection_day": "15th",
   "location_option": ""
 }

@@ -17,7 +17,7 @@ class IN001(TerminalScreen):
             "address":      {"row": 6, "col": 68, "width": 11, "value": ""},
             "pol_branch":   {"row": 9, "col": 30, "width": 2,  "value": "02"},
             "pol_type":     {"row": 9, "col": 37, "width": 3,  "value": "HHR"},
-            "pol_num":      {"row": 9, "col": 45, "width": 6,  "value": "293533"},
+            "pol_num":      {"row": 9, "col": 45, "width": 6,  "value": "000001"},
             "prev_policy":  {"row":10, "col": 30, "width": 20, "value": "GBS"},
             "risk_index":   {"row":11, "col": 30, "width": 13, "value": ""},
             "policy_status":{"row":11, "col": 68, "width": 1,  "value": ""},
@@ -103,7 +103,7 @@ class IN001(TerminalScreen):
             self.navigate("UN021")
             return
         if keysym == "F3":
-            self.navigate("EXIT")
+            self.navigate("BACK")  # was EXIT (destroyed root) - BACK is a safe no-op if the nav stack is empty
             return
         if keysym == "F12":
             self.navigate("BACK")
