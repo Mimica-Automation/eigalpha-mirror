@@ -56,6 +56,13 @@ class ProClientApp:
 
         self.current_screen = None
         self.nav_stack: list[str] = []
+        # UN050 (Risk Selection) is destroyed/recreated every time it's
+        # re-entered (e.g. after leaving to Submit the renewal review and
+        # coming back for the Household Option) - without capturing its
+        # toggle values here first, each fresh instance silently reset to
+        # DEFAULT_RISK_OPTIONS, discarding whatever the operator/automation
+        # had just selected.
+        self.risk_options: dict | None = None
         self.navigate(self.START)
 
     def _build_menu(self):
@@ -116,6 +123,10 @@ class ProClientApp:
             push_new = True
 
         if self.current_screen is not None:
+            if isinstance(self.current_screen, UN050):
+                self.risk_options = {
+                    key: f["value"] for key, f in self.current_screen.fields.items()
+                }
             self.current_screen.destroy()
 
         if target == "MASTERMENU":
@@ -133,7 +144,8 @@ class ProClientApp:
         elif target == "UN045":
             self.current_screen = UN045(self.terminal_container, self.navigate, policy=self.policy, back_target="UN021")
         elif target == "UN050":
-            self.current_screen = UN050(self.terminal_container, self.navigate, policy=self.policy, back_target="UN045")
+            self.current_screen = UN050(self.terminal_container, self.navigate, policy=self.policy,
+                                         risk_options=self.risk_options, back_target="UN045")
         elif target == "UN051":
             self.current_screen = UN051(self.terminal_container, self.navigate, policy=self.policy, back_target="UN050")
         elif target == "UN052":
